@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Admin — Espetaria VAZ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Estilos específicos para o Admin */
+    .admin-container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      border-bottom: 2px solid var(--fire);
+      padding-bottom: 10px;
+    }
+    .admin-card {
+      background: var(--dark-2);
+      border-radius: var(--radius);
+      padding: 25px;
+      margin-bottom: 25px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .admin-card h2 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: var(--fire);
+    }
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--dark);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-box {
+      background: var(--dark-2);
+      padding: 40px;
+      border-radius: var(--radius);
+      border: 1px solid var(--fire);
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+    }
+    .login-box h1 {
+      font-family: var(--font-display);
+      font-size: 40px;
+      margin-bottom: 20px;
+    }
+    .admin-form-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+    .admin-form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .admin-form-group input, .admin-form-group textarea {
+      width: 100%;
+      padding: 12px;
+      background: var(--dark-3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-sm);
+      color: white;
+    }
+    .btn-admin {
+      background: var(--fire);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .btn-admin:hover {
+      background: var(--fire-glow);
+    }
+    .btn-danger {
+      background: #c0392b;
+    }
+    .btn-danger:hover {
+      background: #e74c3c;
+    }
+    .hidden { display: none !important; }
+    
+    .menu-item-list {
+      margin-top: 20px;
+    }
+    .menu-item-admin {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .menu-item-admin:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-box">
+      <h1>Acesso Restrito</h1>
+      <div class="admin-form-group">
+        <label>Senha de Administrador</label>
+        <input type="password" id="admin-password" placeholder="Digite a senha...">
+      </div>
+      <button class="btn-admin" onclick="checkLogin()">Entrar</button>
+      <p id="login-error" style="color: #e74c3c; margin-top: 10px; font-size: 14px;" class="hidden">Senha incorreta!</p>
+    </div>
+  </div>
+
+  <!-- PAINEL -->
+  <div id="admin-panel" class="admin-container hidden">
+    <header class="admin-header">
+      <h1 style="font-family: var(--font-display); font-size: 36px;">🔥 Painel Admin</h1>
+      <button class="btn-admin btn-danger" onclick="logout()">Sair</button>
+    </header>
+
+    <main>
+      <!-- HORÁRIOS E MENSAGENS -->
+      <section class="admin-card">
+        <h2>🕒 Horário e Mensagem</h2>
+        <div class="admin-form-group">
+          <label>Horário de Abertura (ex: 18)</label>
+          <input type="number" id="cfg-abertura" min="0" max="23">
+        </div>
+        <div class="admin-form-group">
+          <label>Horário de Fechamento (ex: 23)</label>
+          <input type="number" id="cfg-fechamento" min="0" max="23">
+        </div>
+        <div class="admin-form-group">
+          <label>Mensagem de Alerta (opcional)</label>
+          <textarea id="cfg-mensagem" rows="2" placeholder="Ex: Hoje abriremos mais tarde devido à chuva..."></textarea>
+        </div>
+        <button class="btn-admin" onclick="saveSettings()">Salvar Configurações</button>
+      </section>
+
+      <!-- ADICIONAR PRATO -->
+      <section class="admin-card">
+        <h2>🍢 Adicionar Novo Prato</h2>
+        <div class="admin-form-group">
+          <label>Nome do Prato</label>
+          <input type="text" id="new-name" placeholder="Ex: Espeto de Picanha">
+        </div>
+        <div class="admin-form-group">
+          <label>Preço (R$)</label>
+          <input type="number" id="new-price" step="0.01" placeholder="15.00">
+        </div>
+        <div class="admin-form-group">
+          <label>URL da Imagem (ou caminho local)</label>
+          <input type="text" id="new-img" placeholder="img/nome.jpg">
+        </div>
+        <div class="admin-form-group">
+          <label>Destaque?</label>
+          <select id="new-badge">
+            <option value="">Nenhum</option>
+            <option value="🔥 Hit">🔥 Hit</option>
+            <option value="✨ Novo">✨ Novo</option>
+            <option value="⭐ Especial">⭐ Especial</option>
+          </select>
+        </div>
+        <button class="btn-admin" onclick="addNewItem()">Adicionar ao Cardápio</button>
+      </section>
+
+      <!-- LISTA DE ITENS ATUAIS -->
+      <section class="admin-card">
+        <h2>📋 Gerenciar Cardápio</h2>
+        <p class="section-sub">Itens adicionados manualmente via painel:</p>
+        <div id="admin-menu-list" class="menu-item-list">
+          <!-- Itens aparecerão aqui -->
+        </div>
+      </section>
+      
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="index.html" style="color: var(--fire); font-weight: 600;">← Voltar para o Site</a>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
